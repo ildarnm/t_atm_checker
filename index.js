@@ -84,6 +84,7 @@ const initBot = function () {
 
 const main = async function () {
     initBot();
+    console.log('Init');
 }
 
 main();
