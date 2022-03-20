@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import {Telegraf} from "telegraf"
+import express from 'express';
 
 let intervalId;
 
@@ -75,14 +76,26 @@ const initBot = function () {
         endChecking();
         ctx.reply('Bot end checking...');
     })
-    bot.launch();
+    bot.startPolling();
 
     // Enable graceful stop
     process.once('SIGINT', () => bot.stop('SIGINT'))
     process.once('SIGTERM', () => bot.stop('SIGTERM'))
 }
 
+const initExpress = function () {
+    const expressApp = express()
+    const port = process.env.PORT || 5000
+    expressApp.get('/', (req, res) => {
+        res.send('Hello World!')
+    })
+    expressApp.listen(port, () => {
+        console.log(`Listening on port ${port}`)
+    })
+}
+
 const main = async function () {
+    initExpress();
     initBot();
     console.log('Init');
 }
