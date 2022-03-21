@@ -3,6 +3,7 @@ import {Telegraf} from "telegraf"
 import express from 'express';
 
 let intervalId;
+let isCheckingStarted = false;
 
 const post = async function (url, data = {}) {
     // Default options are marked with *
@@ -38,29 +39,35 @@ const getAtmPointWithMoney = async function () {
     }, []);
 }
 
-const checkAtm = async function (bot) {
+const checkAtm = async function (ctx) {
     const points = await getAtmPointWithMoney();
     if (points.length > 0) {
         points.forEach((point) => {
-            bot.reply(`${point.address} $${point.limits[0].amount}`);
+            ctx.reply(`${point.address} $${point.limits[0].amount}`);
         })
     } else {
         console.log("Nothing");
     }
 }
 
-const startChecking = async function (bot) {
-    checkAtm(bot);
+const startChecking = async function (ctx) {
+    if (isCheckingStarted) {
+        ctx.reply('Checking already started.');
+        return;
+    }
+    isCheckingStarted = true;
+    checkAtm(ctx);
     intervalId = setInterval(() => {
-        checkAtm(bot);
+        checkAtm(ctx);
     }, 180000);
-
+    ctx.reply('Bot start checking...');
 }
 
 const endChecking = async function () {
     if (intervalId) {
         clearInterval(intervalId);
     }
+    isCheckingStarted = false;
 }
 
 const initBot = function () {
@@ -69,8 +76,7 @@ const initBot = function () {
         ctx.reply('Welcome');
     });
     bot.command('start_checking', (ctx) => {
-        startChecking(bot);
-        ctx.reply('Bot start checking...');
+        startChecking(ctx);
     });
     bot.command('end_checking', (ctx) => {
         endChecking();
@@ -95,7 +101,9 @@ const initExpress = function () {
 }
 
 const main = async function () {
-    initExpress();
+    if (process.env.INIT_EXPRESS) {
+        initExpress();
+    }
     initBot();
     console.log('Init');
 }
