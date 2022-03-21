@@ -38,21 +38,21 @@ const getAtmPointWithMoney = async function () {
     }, []);
 }
 
-const checkAtm = async function () {
+const checkAtm = async function (bot) {
     const points = await getAtmPointWithMoney();
     if (points.length > 0) {
         points.forEach((point) => {
-            console.log(point.address, point.limits[0].amount);
+            bot.reply(`${point.address} $${point.limits[0].amount}`);
         })
     } else {
         console.log("Nothing");
     }
 }
 
-const startChecking = async function () {
-    checkAtm();
+const startChecking = async function (bot) {
+    checkAtm(bot);
     intervalId = setInterval(() => {
-        checkAtm();
+        checkAtm(bot);
     }, 180000);
 
 }
@@ -69,7 +69,7 @@ const initBot = function () {
         ctx.reply('Welcome');
     });
     bot.command('start_checking', (ctx) => {
-        startChecking();
+        startChecking(bot);
         ctx.reply('Bot start checking...');
     });
     bot.command('end_checking', (ctx) => {
